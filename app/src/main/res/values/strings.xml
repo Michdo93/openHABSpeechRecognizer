@@ -1,0 +1,63 @@
+<resources>
+    <string name="app_name">openHAB Speech Recognizer</string>
+    <!-- Sync Preferences -->
+    <string name="settings_icon_description_de">Einstellungen öffnen/schließen</string>
+    <string name="settings_icon_description_en">Open/close settings menu</string>
+    <string name="language_category_de">Sprache</string>
+    <string name="language_preference_title_de">Sprache auswählen</string>
+    <string name="language_preference_summary_de">Wählen Sie die Sprache aus</string>
+    <string name="language_category_en">Language</string>
+    <string name="language_preference_title_en">Select language</string>
+    <string name="language_preference_summary_en">Select the language</string>
+    <string name="default_language_value">en</string>
+    <string name="connection_category_de">Verbindungseinstellungen</string>
+    <string name="protocol_preference_title_de">Protokoll auswählen</string>
+    <string name="protocol_preference_summary_de">Wählen Sie das Protokoll aus</string>
+    <string name="connection_category_en">Connection settings</string>
+    <string name="protocol_preference_title_en">Select protocol</string>
+    <string name="protocol_preference_summary_en">Select the protocol</string>
+    <string name="default_protocol_value">http</string>
+    <string name="ip_address_preference_title_de">IP-Adresse</string>
+    <string name="ip_address_preference_summary_de">Geben Sie die IP-Adresse ein</string>
+    <string name="ip_address_preference_dialog_title_de">IP-Adresse eingeben</string>
+    <string name="ip_address_preference_title_en">IP address</string>
+    <string name="ip_address_preference_summary_en">Enter the IP address</string>
+    <string name="ip_address_preference_dialog_title_en">Enter IP address</string>
+    <string name="default_ip_address">192.168.0.1</string>
+    <string name="port_preference_title_de">Port</string>
+    <string name="port_preference_summary_de">Geben Sie den Port ein</string>
+    <string name="port_preference_dialog_title_de">Port eingeben</string>
+    <string name="port_preference_title_en">Port</string>
+    <string name="port_preference_summary_en">Enter the port</string>
+    <string name="port_preference_dialog_title_en">Enter port</string>
+    <string name="default_port">8080</string>
+    <string name="language_english_de">Englisch</string>
+    <string name="language_german_de">Deutsch</string>
+    <string name="language_english_en">English</string>
+    <string name="language_german_en">German</string>
+    <string name="recording_text_de">Aufnahme läuft…</string>
+    <string name="start_recording_text_de">Aufnahme starten</string>
+    <string name="recording_text_en">Recording in progress…</string>
+    <string name="start_recording_text_en">Start recording</string>
+    <string name="activity_main_title_text_de">Aufnahme</string>
+    <string name="activity_main_title_text_en">Recording</string>
+    <string name="activity_result_title_text_de">Ergebnis</string>
+    <string name="activity_result_title_text_en">Result</string>
+    <string name="settings_activity_title_text_de">Einstellungen</string>
+    <string name="settings_activity_title_text_en">Settings</string>
+    <string name="stt_item_name_preference_title_en">STT item name</string>
+    <string name="stt_item_name_preference_title_de">Name STT Item</string>
+    <string name="stt_item_name_preference_summary_en">Enter the name of the STT item</string>
+    <string name="stt_item_name_preference_summary_de">Geben Sie den Namen des STT Items ein</string>
+    <string name="stt_item_name_preference_dialog_title_en">Enter STT item name</string>
+    <string name="stt_item_name_preference_dialog_title_de">STT Item Name eingeben</string>
+    <string name="stt_item_name_preference_default_value">openHAB_SpeechRecognizer_STTBuffer</string>
+    <string-array name="language_entries">
+        <item>English</item>
+        <item>German</item>
+    </string-array>
+    <string-array name="language_entry_values">
+        <item>en</item>
+        <item>de</item>
+    </string-array>
+</resources>
