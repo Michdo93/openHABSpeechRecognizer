@@ -2,6 +2,7 @@ package com.openhab.qr.openhabspeechrecognizer;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
@@ -9,6 +10,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
@@ -17,12 +19,11 @@ import androidx.preference.PreferenceManager;
 import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -46,6 +47,7 @@ public class ResultActivity extends AppCompatActivity {
     private static final String CONTENT_TYPE_TEXT = "text/plain; charset=utf-8";
     private static final String ACCEPT_TEXT = "text/plain";
     private static final String ACCEPT_JSON = "application/json";
+    private String result;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,12 +66,15 @@ public class ResultActivity extends AppCompatActivity {
 
         TextView tvResult = findViewById(R.id.tv_result);
 
-        String result = getIntent().getStringExtra("result");
+        this.result = getIntent().getStringExtra("result");
         tvResult.setText(result);
 
         ImageView settingsIcon = findViewById(R.id.settings_icon);
         settingsIcon.setOnClickListener(this::openSettings);
         settingsIcon.setColorFilter(ContextCompat.getColor(this, android.R.color.white));
+
+        SendCommandAsyncTask sendCommandTask = new SendCommandAsyncTask();
+        sendCommandTask.execute();
     }
 
     @Override
@@ -124,69 +129,35 @@ public class ResultActivity extends AppCompatActivity {
     }
 
     private void setBaseURL() {
-        baseURL = protocolPreference + "://" + ipAddressPreference + ":" + portPreference + "/rest";
+        baseURL = String.format("%s://%s:%s/rest", protocolPreference, ipAddressPreference, portPreference);
     }
 
     private void showToastMessage(String message) {
         Toast.makeText(this, message, Toast.LENGTH_LONG).show();
     }
 
-    private void handleItemExistence(String itemURL) {
-        RequestQueue queue = Volley.newRequestQueue(this);
-        JsonObjectRequest getRequest = new JsonObjectRequest(Request.Method.GET, itemURL, null,
-                new Response.Listener<JSONObject>() {
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        try {
-                            if (response.has("name") && response.getString("name").equals(sttItemNamePreference)) {
-                                updateItemValue(response.getString("link"));
-                            }
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                            showToastMessage("Error: Failed to parse JSON response");
-                        }
-                    }
-                },
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        showToastMessage("Error: Failed to check item existence");
-                    }
-                }
-        );
-
-        queue.add(getRequest);
+    private void showErrorDialog(String message) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Error")
+                .setMessage(message)
+                .setPositiveButton("OK", null)
+                .show();
     }
 
-    private void updateItemValue(String itemLink) {
+    private void updateItemValue() {
         RequestQueue queue = Volley.newRequestQueue(this);
         String itemURL = baseURL + "/items/" + sttItemNamePreference;
-        String result = getIntent().getStringExtra("result");
 
-        StringRequest postRequest = new StringRequest(Request.Method.POST, itemURL,
-                new Response.Listener<String>() {
-                    @Override
-                    public void onResponse(String response) {
-                        showToastMessage("Item value updated successfully");
-                    }
-                },
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        showToastMessage("Error: Failed to update item value");
-                    }
-                }
+        JsonArrayRequest postRequest = new JsonArrayRequest(Request.Method.POST, itemURL,
+                new JSONArray().put(result),
+                response -> showToastMessage("Item value updated successfully"),
+                error -> showErrorDialog("Error: Failed to update item value")
         ) {
-            @Override
-            public byte[] getBody() throws AuthFailureError {
-                return result.getBytes();
-            }
-
             @Override
             public Map<String, String> getHeaders() throws AuthFailureError {
                 Map<String, String> headers = new HashMap<>();
-                headers.put("Content-type", CONTENT_TYPE_TEXT);
-                headers.put("Accept", ACCEPT_TEXT);
+                headers.put("Content-type", CONTENT_TYPE_JSON);
+                headers.put("Accept", ACCEPT_JSON);
                 return headers;
             }
         };
@@ -197,7 +168,6 @@ public class ResultActivity extends AppCompatActivity {
     private void createNewItem() {
         RequestQueue queue = Volley.newRequestQueue(this);
         String itemURL = baseURL + "/items/" + sttItemNamePreference;
-        String result = getIntent().getStringExtra("result");
 
         JSONObject itemData = new JSONObject();
         try {
@@ -209,18 +179,8 @@ public class ResultActivity extends AppCompatActivity {
         }
 
         JsonObjectRequest putRequest = new JsonObjectRequest(Request.Method.PUT, itemURL, itemData,
-                new Response.Listener<JSONObject>() {
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        showToastMessage("New item created successfully");
-                    }
-                },
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        showToastMessage("Error: Failed to create new item");
-                    }
-                }
+                response -> showToastMessage("New item created successfully"),
+                error -> showErrorDialog("Error: Failed to create new item")
         ) {
             @Override
             public Map<String, String> getHeaders() throws AuthFailureError {
@@ -239,60 +199,53 @@ public class ResultActivity extends AppCompatActivity {
         RequestQueue queue = Volley.newRequestQueue(this);
 
         JsonObjectRequest getRequest = new JsonObjectRequest(Request.Method.GET, itemURL, null,
-                new Response.Listener<JSONObject>() {
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        try {
-                            if (response.has("name") && response.getString("name").equals(sttItemNamePreference)) {
-                                updateItemValue(response.getString("link"));
-                            } else {
-                                createNewItem();
-                            }
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                            showToastMessage("Error: Failed to parse JSON response");
+                response -> {
+                    try {
+                        if (response.has("name") && response.getString("name").equals(sttItemNamePreference)) {
+                            updateItemValue();
+                        } else {
+                            createNewItem();
                         }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                        showErrorDialog("Error: Failed to parse JSON response");
                     }
                 },
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        createNewItem();
-                    }
-                }
+                error -> createNewItem()
         );
 
         queue.add(getRequest);
     }
 
-    public void sendCommand(View view) {
-        String itemURL = baseURL + "/items/" + sttItemNamePreference;
+    private class SendCommandAsyncTask extends AsyncTask<Void, Void, Void> {
 
-        RequestQueue queue = Volley.newRequestQueue(this);
-        JsonObjectRequest getRequest = new JsonObjectRequest(Request.Method.GET, itemURL, null,
-                new Response.Listener<JSONObject>() {
-                    @Override
-                    public void onResponse(JSONObject response) {
+        public SendCommandAsyncTask() {
+        }
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            String itemURL = baseURL + "/items/" + sttItemNamePreference;
+
+            RequestQueue queue = Volley.newRequestQueue(ResultActivity.this);
+            JsonObjectRequest getRequest = new JsonObjectRequest(Request.Method.GET, itemURL, null,
+                    response -> {
                         try {
                             if (response.has("name") && response.getString("name").equals(sttItemNamePreference)) {
-                                updateItemValue(response.getString("link"));
+                                updateItemValue();
                             } else {
                                 checkItemExistence();
                             }
                         } catch (JSONException e) {
                             e.printStackTrace();
-                            showToastMessage("Error: Failed to parse JSON response");
+                            showErrorDialog("Error: Failed to parse JSON response");
                         }
-                    }
-                },
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        showToastMessage("Error: Failed to check item existence");
-                    }
-                }
-        );
+                    },
+                    error -> showErrorDialog("Error: Failed to check item existence")
+            );
 
-        queue.add(getRequest);
+            queue.add(getRequest);
+
+            return null;
+        }
     }
 }
