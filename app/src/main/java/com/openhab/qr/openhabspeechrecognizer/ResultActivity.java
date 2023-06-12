@@ -48,6 +48,13 @@ public class ResultActivity extends AppCompatActivity {
     private static final String ACCEPT_TEXT = "text/plain";
     private static final String ACCEPT_JSON = "application/json";
     private String result;
+    private String errorTitle;
+    private String updateItemMessage;
+    private String updateItemMessageError;
+    private String createNewItemMessage;
+    private String createNewItemMessageError;
+    private String checkItemExistenceMessage;
+    private String jsonParseError;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -123,8 +130,10 @@ public class ResultActivity extends AppCompatActivity {
     private void setTitleText() {
         if (languagePreference.equals("de")) {
             titleText = getString(R.string.activity_result_title_text_de);
+            jsonParseError = getString(R.string.json_parse_error_de);
         } else if (languagePreference.equals("en")) {
             titleText = getString(R.string.activity_result_title_text_en);
+            jsonParseError = getString(R.string.json_parse_error_en);
         }
     }
 
@@ -137,21 +146,35 @@ public class ResultActivity extends AppCompatActivity {
     }
 
     private void showErrorDialog(String message) {
+        if (languagePreference.equals("de")) {
+            errorTitle = getString(R.string.error_title_de);
+        } else if (languagePreference.equals("en")) {
+            errorTitle = getString(R.string.error_title_en);
+        }
+
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Error")
+        builder.setTitle(errorTitle)
                 .setMessage(message)
-                .setPositiveButton("OK", null)
+                .setPositiveButton(android.R.string.ok, null)
                 .show();
     }
 
     private void updateItemValue() {
+        if (languagePreference.equals("de")) {
+            updateItemMessage = getString(R.string.toast_item_updated_de);
+            updateItemMessageError = getString(R.string.toast_item_update_error_de);
+        } else if (languagePreference.equals("en")) {
+            updateItemMessage = getString(R.string.toast_item_updated_en);
+            updateItemMessageError = getString(R.string.toast_item_update_error_en);
+        }
+
         RequestQueue queue = Volley.newRequestQueue(this);
         String itemURL = baseURL + "/items/" + sttItemNamePreference;
 
         JsonArrayRequest postRequest = new JsonArrayRequest(Request.Method.POST, itemURL,
                 new JSONArray().put(result),
-                response -> showToastMessage("Item value updated successfully"),
-                error -> showErrorDialog("Error: Failed to update item value")
+                response -> showToastMessage(updateItemMessage),
+                error -> showErrorDialog(updateItemMessageError)
         ) {
             @Override
             public Map<String, String> getHeaders() throws AuthFailureError {
@@ -166,6 +189,14 @@ public class ResultActivity extends AppCompatActivity {
     }
 
     private void createNewItem() {
+        if (languagePreference.equals("de")) {
+            createNewItemMessage = getString(R.string.toast_new_item_created_de);
+            createNewItemMessageError = getString(R.string.toast_new_item_creation_error_de);
+        } else if (languagePreference.equals("en")) {
+            createNewItemMessage = getString(R.string.toast_new_item_created_en);
+            createNewItemMessageError = getString(R.string.toast_new_item_creation_error_en);
+        }
+
         RequestQueue queue = Volley.newRequestQueue(this);
         String itemURL = baseURL + "/items/" + sttItemNamePreference;
 
@@ -179,8 +210,8 @@ public class ResultActivity extends AppCompatActivity {
         }
 
         JsonObjectRequest putRequest = new JsonObjectRequest(Request.Method.PUT, itemURL, itemData,
-                response -> showToastMessage("New item created successfully"),
-                error -> showErrorDialog("Error: Failed to create new item")
+                response -> showToastMessage(createNewItemMessage),
+                error -> showErrorDialog(createNewItemMessageError)
         ) {
             @Override
             public Map<String, String> getHeaders() throws AuthFailureError {
@@ -208,7 +239,7 @@ public class ResultActivity extends AppCompatActivity {
                         }
                     } catch (JSONException e) {
                         e.printStackTrace();
-                        showErrorDialog("Error: Failed to parse JSON response");
+                        showErrorDialog(jsonParseError);
                     }
                 },
                 error -> createNewItem()
@@ -224,6 +255,12 @@ public class ResultActivity extends AppCompatActivity {
 
         @Override
         protected Void doInBackground(Void... voids) {
+            if (languagePreference.equals("de")) {
+                checkItemExistenceMessage = getString(R.string.toast_item_existence_error_de);
+            } else if (languagePreference.equals("en")) {
+                checkItemExistenceMessage = getString(R.string.toast_item_existence_error_en);
+            }
+
             String itemURL = baseURL + "/items/" + sttItemNamePreference;
 
             RequestQueue queue = Volley.newRequestQueue(ResultActivity.this);
@@ -237,10 +274,10 @@ public class ResultActivity extends AppCompatActivity {
                             }
                         } catch (JSONException e) {
                             e.printStackTrace();
-                            showErrorDialog("Error: Failed to parse JSON response");
+                            showErrorDialog(jsonParseError);
                         }
                     },
-                    error -> showErrorDialog("Error: Failed to check item existence")
+                    error -> showErrorDialog(checkItemExistenceMessage)
             );
 
             queue.add(getRequest);

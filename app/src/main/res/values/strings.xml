@@ -60,4 +60,19 @@
         <item>en</item>
         <item>de</item>
     </string-array>
+    <string name="error_title_de">Fehler</string>
+    <string name="toast_item_updated_de">Das STT-Item wurde erfolgreich aktualisiert.</string>
+    <string name="toast_item_update_error_de">Fehler: Die Aktualisierung des STT-Items ist fehlgeschlagen.</string>
+    <string name="toast_new_item_created_de">Das neue STT-Item wurde erfolgreich erstellt.</string>
+    <string name="toast_new_item_creation_error_de">Fehler: Erstellung des neuen STT-Items fehlgeschlagen. Prüfe den Zugriff auf die REST-API.</string>
+    <string name="toast_item_existence_error_de">Fehler: Die Überprüfung der Existenz des STT-Items ist fehlgeschlagen. Prüfe den Zugriff auf die REST-API.</string>
+    <string name="error_title_en">Error</string>
+    <string name="toast_item_updated_en">The STT item has been successfully updated.</string>
+    <string name="toast_item_update_error_en">Error: The update of the STT item failed.</string>
+    <string name="toast_new_item_created_en">The new STT item was successfully created.</string>
+    <string name="toast_new_item_creation_error_en">Error: Creation of the new STT item failed. Check access to the REST API.</string>
+    <string name="toast_item_existence_error_en">Error: Checking the existence of the STT item failed. Check access to the REST API.</string>
+    <string name="dialog_ok">OK</string>
+    <string name="json_parse_error_de">Fehler: JSON-Antwort konnte nicht geparst werden</string>
+    <string name="json_parse_error_en">Error: Failed to parse JSON response</string>
 </resources>
