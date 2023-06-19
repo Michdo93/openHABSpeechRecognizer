@@ -1,4 +1,4 @@
-package com.openhab.qr.openhabspeechrecognizer;
+package org.openhab.speechrecognizer;
 
 import org.junit.Test;
 

@@ -37,7 +37,7 @@
         android:paddingBottom="16dp"
         android:paddingStart="16dp"
         android:paddingEnd="16dp"
-        tools:context=".MainActivity">
+        tools:context="org.openhab.speechrecognizer.MainActivity">
 
         <Button
             android:id="@+id/btn_record"

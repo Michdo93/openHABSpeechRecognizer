@@ -1,4 +1,4 @@
-package com.openhab.qr.openhabspeechrecognizer;
+package org.openhab.speechrecognizer;
 
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -14,7 +14,6 @@ import androidx.preference.ListPreference;
 import androidx.preference.PreferenceCategory;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceManager;
-
 public class SettingsActivity extends AppCompatActivity {
     private SharedPreferences sharedPreferences;
 
@@ -81,6 +80,8 @@ public class SettingsActivity extends AppCompatActivity {
         private String protocolValue;
         private String ipAddressValue;
         private String portValue;
+        private String usernameValue;
+        private String passwordValue;
         private String sttItemNameValue;
         private PreferenceCategory languageCategory;
         private PreferenceCategory connectionCategory;
@@ -88,6 +89,8 @@ public class SettingsActivity extends AppCompatActivity {
         private ListPreference protocolPreference;
         private EditTextPreference ipAddressPreference;
         private EditTextPreference portPreference;
+        private EditTextPreference usernamePreference;
+        private EditTextPreference passwordPreference;
         private EditTextPreference sttItemNamePreference;
 
         @Override
@@ -190,6 +193,36 @@ public class SettingsActivity extends AppCompatActivity {
                     portPreference.setDialogTitle(getString(R.string.port_preference_dialog_title_en));
                 }
                 portPreference.setDefaultValue(getString(R.string.default_port));
+            }
+
+            usernamePreference = findPreference("username_preference");
+            if (usernamePreference != null) {
+                usernameValue = sharedPreferences.getString("username_preference", "");
+                if (languageValue.equals("de")) {
+                    usernamePreference.setTitle(getString(R.string.username_preference_title_de));
+                    usernamePreference.setSummary(getString(R.string.username_preference_summary_de));
+                    usernamePreference.setDialogTitle(getString(R.string.username_preference_dialog_title_de));
+                } else if (languageValue.equals("en")) {
+                    usernamePreference.setTitle(getString(R.string.username_preference_title_en));
+                    usernamePreference.setSummary(getString(R.string.username_preference_summary_en));
+                    usernamePreference.setDialogTitle(getString(R.string.username_preference_dialog_title_en));
+                }
+                usernamePreference.setDefaultValue(getString(R.string.default_username));
+            }
+
+            passwordPreference = findPreference("password_preference");
+            if (passwordPreference != null) {
+                passwordValue = sharedPreferences.getString("password_preference", "");
+                if (languageValue.equals("de")) {
+                    passwordPreference.setTitle(getString(R.string.password_preference_title_de));
+                    passwordPreference.setSummary(getString(R.string.password_preference_summary_de));
+                    passwordPreference.setDialogTitle(getString(R.string.password_preference_dialog_title_de));
+                } else if (languageValue.equals("en")) {
+                    passwordPreference.setTitle(getString(R.string.password_preference_title_en));
+                    passwordPreference.setSummary(getString(R.string.password_preference_summary_en));
+                    passwordPreference.setDialogTitle(getString(R.string.password_preference_dialog_title_en));
+                }
+                passwordPreference.setDefaultValue(getString(R.string.default_password));
             }
 
             sttItemNamePreference = findPreference("stt_item_name_preference");

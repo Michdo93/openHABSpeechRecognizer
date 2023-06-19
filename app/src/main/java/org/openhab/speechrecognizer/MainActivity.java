@@ -1,4 +1,4 @@
-package com.openhab.qr.openhabspeechrecognizer;
+package org.openhab.speechrecognizer;
 
 import android.Manifest;
 import android.annotation.SuppressLint;

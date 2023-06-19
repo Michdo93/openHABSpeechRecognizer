@@ -42,6 +42,20 @@
             android:defaultValue="@string/default_port" />
 
         <EditTextPreference
+            android:key="username_preference"
+            android:title="@string/username_preference_title_en"
+            android:summary="@string/username_preference_summary_en"
+            android:dialogTitle="@string/username_preference_dialog_title_en"
+            android:defaultValue="@string/default_username" />
+
+        <EditTextPreference
+            android:key="password_preference"
+            android:title="@string/password_preference_title_en"
+            android:summary="@string/password_preference_summary_en"
+            android:dialogTitle="@string/password_preference_dialog_title_en"
+            android:defaultValue="@string/default_password" />
+
+        <EditTextPreference
             android:key="stt_item_name_preference"
             android:title="@string/stt_item_name_preference_title_en"
             android:summary="@string/stt_item_name_preference_summary_en"
