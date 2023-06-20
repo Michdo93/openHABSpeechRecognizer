@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
@@ -77,8 +78,10 @@ public class ResultActivity extends AppCompatActivity {
         settingsIcon.setOnClickListener(this::openSettings);
         settingsIcon.setColorFilter(ContextCompat.getColor(this, android.R.color.white));
 
-        SendCommandAsyncTask sendCommandTask = new SendCommandAsyncTask();
-        sendCommandTask.execute();
+        if (checkBaseUrlAndCreateCRUD()) {
+            SendCommandAsyncTask sendCommandTask = new SendCommandAsyncTask();
+            sendCommandTask.execute();
+        }
     }
 
     @Override
@@ -102,6 +105,12 @@ public class ResultActivity extends AppCompatActivity {
         toolbar.setTitleTextColor(ContextCompat.getColor(this, android.R.color.white));
         getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_arrow_back_white);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+    }
+
+
+    private boolean checkBaseUrlAndCreateCRUD() {
+        setBaseURL();
+        return true;
     }
 
     @Override
@@ -170,67 +179,83 @@ public class ResultActivity extends AppCompatActivity {
                 .show();
     }
 
-    private class SendCommandAsyncTask extends AsyncTask<Void, Void, Void> {
-
-        public SendCommandAsyncTask() {
-            try {
-                URL urlCheck = new URL(baseURL);
-                HttpURLConnection connection = (HttpURLConnection) urlCheck.openConnection();
-                connection.setRequestMethod("GET");
-                connection.setConnectTimeout(5000);
-
-                int responseCode = connection.getResponseCode();
-                if (responseCode == 200) {
-                    if((!usernamePreference.equals("") || usernamePreference != null) && (!passwordPreference.equals("") || passwordPreference != null)) {
-                        crud = new CRUD(baseURL, usernamePreference, passwordPreference);
-                    } else {
-                        crud = new CRUD(baseURL);
-                    }
-                } else {
-                    showErrorDialog(urlNotReachableError + responseCode);
-                }
-            } catch (IOException e) {
-                showErrorDialog(establishingConnectionError + e.getMessage());
-            }
-        }
+    private class SendCommandAsyncTask extends AsyncTask<Void, Void, Boolean> {
+        private boolean success;
+        private String errorMessage;
 
         @Override
-        protected Void doInBackground(Void... voids) {
-            if(crud != null) {
+        protected Boolean doInBackground(Void... voids) {
+            if (baseURL != null && !baseURL.isEmpty()) {
+                Log.d("doInBackground","baseURL is not null.");
+                try {
+                    URL urlCheck = new URL(baseURL);
+                    HttpURLConnection connection = (HttpURLConnection) urlCheck.openConnection();
+                    connection.setRequestMethod("GET");
+                    connection.setConnectTimeout(5000);
+
+                    int responseCode = connection.getResponseCode();
+                    if (responseCode == 200) {
+                        Log.d("doInBackground","CRUD was created");
+                        if (!usernamePreference.isEmpty() && !passwordPreference.isEmpty()) {
+                            crud = new CRUD(baseURL, usernamePreference, passwordPreference);
+                        } else {
+                            crud = new CRUD(baseURL);
+                        }
+                    } else {
+                        errorMessage = urlNotReachableError + responseCode;
+                        return false;
+                    }
+                } catch (IOException e) {
+                    errorMessage = establishingConnectionError + e.getMessage();
+                    return false;
+                }
+            }
+
+            if (crud != null) {
                 JSONObject item = null;
                 JSONObject errorObject = null;
                 String message = null;
                 int httpCode = 0;
+
                 try {
-                    item = new JSONObject(crud.readItem(sttItemNamePreference));
-
-                    if (item.has("error")) {
-                        errorObject = item.getJSONObject("error");
-                        message = errorObject.getString("message");
-                        httpCode = errorObject.getInt("http-code");
-
-                        if (message.contains("does not exist") || httpCode == 404) {
-                            if((!usernamePreference.equals("") || usernamePreference != null) && (!passwordPreference.equals("") || passwordPreference != null)) {
-                                showErrorDialog(createNewItemMessageError);
-                            } else {
-                                crud.createItem("String", sttItemNamePreference);
-                                showToastMessage(createNewItemMessage);
-                            }
-                        }
-                    }
+                    String itemJson = crud.readItem(sttItemNamePreference);
+                    Log.d("ReadItem", "Returned JSON: " + itemJson);
+                    item = new JSONObject(itemJson);
                 } catch (JSONException e) {
-                    showErrorDialog(jsonParseError + e.getMessage());
-                    throw new RuntimeException(e);
+                    Log.d("Create new Item", jsonParseError + e.getMessage());
+                    if (usernamePreference.isEmpty() && passwordPreference.isEmpty()) {
+                        errorMessage = createNewItemMessageError;
+                        return false;
+                    } else {
+                        crud.createItem("String", sttItemNamePreference);
+                        errorMessage = createNewItemMessage;
+                    }
                 }
 
-                if((sttItemNamePreference != null && !sttItemNamePreference.equals("")) || (result != null && !result.equals(""))) {
+                if (sttItemNamePreference != null && !sttItemNamePreference.isEmpty() && result != null && !result.isEmpty()) {
                     crud.sendCommand(sttItemNamePreference, result);
-                    showToastMessage(updateItemMessage);
+                    errorMessage = updateItemMessage;
+                    success = true;
                 } else {
-                    showErrorDialog(updateItemMessageError);
+                    errorMessage = updateItemMessageError;
+                    success = false;
                 }
+
+                return success;
             }
-            return null;
+
+            return false;
+        }
+
+        @Override
+        protected void onPostExecute(Boolean result) {
+            super.onPostExecute(result);
+
+            if (result) {
+                showToastMessage(errorMessage);
+            } else {
+                showErrorDialog(errorMessage);
+            }
         }
     }
 }
